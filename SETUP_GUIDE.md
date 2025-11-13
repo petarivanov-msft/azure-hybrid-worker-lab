@@ -1,46 +1,8 @@
 # ==============================================================================
-# Step-by-Step Guide: Push to GitHub and Deploy from Azure Cloud Shell
+# Step-by-Step Guide: Deploy from Azure Cloud Shell
 # ==============================================================================
 
-# PART 1: CREATE GITHUB REPOSITORY
-# ==============================================================================
-
-## Option A: Using GitHub Web Interface (Easiest)
-
-1. Go to: https://github.com/new
-
-2. Fill in the details:
-   - Repository name: azure-hybrid-worker-lab
-   - Description: Complete Terraform lab for Azure Automation Hybrid Worker with managed identities
-   - Visibility: Public (or Private if you prefer)
-   - DO NOT initialize with README, .gitignore, or license (we already have these)
-
-3. Click "Create repository"
-
-4. Copy the repository URL (it will look like: https://github.com/YOUR_USERNAME/azure-hybrid-worker-lab.git)
-
-5. In PowerShell (in this directory), run:
-   ```powershell
-   git remote add origin https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-## Option B: Using GitHub CLI (If you have it installed)
-
-```powershell
-# Login to GitHub
-gh auth login
-
-# Create repository and push
-gh repo create azure-hybrid-worker-lab --public --source=. --remote=origin --push
-
-# Or for private repository
-gh repo create azure-hybrid-worker-lab --private --source=. --remote=origin --push
-```
-
-# ==============================================================================
-# PART 2: DEPLOY FROM AZURE CLOUD SHELL
+# DEPLOYMENT INSTRUCTIONS
 # ==============================================================================
 
 ## Step 1: Open Azure Cloud Shell
