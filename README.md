@@ -1,129 +1,176 @@
-# Azure Hybrid Worker Lab - Terraform Configuration
+# Azure Hybrid Worker Lab - Terraform
 
-This Terraform configuration creates a complete Azure lab environment with:
-1. ✅ A Windows Virtual Machine (VM) with system-managed identity
-2. ✅ An Azure Automation Account with system-managed identity
-3. ✅ Onboards the VM as a Hybrid Runbook Worker
-4. ✅ Enables system-managed identity on both VM and Automation Account
-5. ✅ Assigns Contributor role to both managed identities at subscription level
+Complete Terraform configuration for deploying an Azure Automation Hybrid Worker environment with automated testing, managed identities, and PowerShell automation capabilities.
 
-## Key Features
+## 🎯 What This Does
 
-- **Proper URL Handling**: Uses Azure REST API to fetch the correct `AutomationHybridServiceUrl`
-- **Worker Registration**: Registers the VM in the Hybrid Worker Group before installing the extension
-- **Identity & RBAC**: Both the VM and Automation Account have system-assigned managed identities with Contributor role
-- **Complete Infrastructure**: Includes VNet, Subnet, NSG, Public IP, and all necessary network components
+Creates a **production-ready** Azure Hybrid Worker lab with:
+- ✅ Windows VM (Windows Server 2022) with system-assigned managed identity
+- ✅ Azure Automation Account with system-assigned managed identity
+- ✅ Hybrid Worker Group and VM registration
+- ✅ PowerShell modules (Az.Accounts, Az.Compute) on both VM and Automation Account
+- ✅ Test runbook that uses managed identity authentication
+- ✅ Automated runbook execution and testing
+- ✅ Contributor role assignments for both managed identities
 
-## Prerequisites
+## 🚀 Quick Start (Azure Cloud Shell)
 
-- [Terraform](https://www.terraform.io/downloads.html) installed (>= 1.0)
-- Azure CLI installed and authenticated (`az login`)
-- An active Azure subscription
-
-## Resources Created
-
-- **Resource Group**: Container for all resources
-- **Virtual Network & Subnet**: Network infrastructure
-- **Network Security Group**: Allows RDP access (port 3389)
-- **Public IP**: For VM remote access
-- **Network Interface**: Connects VM to network
-- **Windows VM**: Windows Server 2022 with system-managed identity
-- **Automation Account**: With system-managed identity enabled
-- **Hybrid Worker Group**: For organizing hybrid workers
-- **VM Extension**: Installs and configures the Hybrid Worker agent
-- **Role Assignments**: Contributor role for both managed identities
-
-## Configuration
-
-You can customize the deployment by modifying variables in `variables.tf` or creating a `terraform.tfvars` file:
-
-```hcl
-resource_group_name = "rg-hybrid-worker-lab"
-location            = "East US"
-prefix              = "hwlab"
-vm_size             = "Standard_B2s"
-admin_username      = "azureadmin"
+### 1. Open Azure Cloud Shell
+```bash
+# Go to: https://shell.azure.com
+# Or click the Cloud Shell icon in Azure Portal
 ```
 
-## Deployment Steps
+### 2. Clone this repository
+```bash
+git clone https://github.com/YOUR_USERNAME/azure-hybrid-worker-lab.git
+cd azure-hybrid-worker-lab
+```
 
-1. **Initialize Terraform**
-   ```powershell
-   terraform init
-   ```
+### 3. Deploy
+```bash
+# Initialize Terraform
+terraform init
 
-2. **Validate Configuration**
-   ```powershell
-   terraform validate
-   ```
+# Deploy (takes ~7-10 minutes)
+terraform apply -auto-approve
+```
 
-3. **Review Planned Changes**
-   ```powershell
-   terraform plan
-   ```
+### 4. View Results
+After deployment, you'll see outputs with links to your resources in Azure Portal.
 
-4. **Apply Configuration**
-   ```powershell
-   terraform apply -auto-approve
-   ```
-
-5. **View Outputs**
-   ```powershell
-   terraform output
-   ```
-
-6. **Retrieve VM Password** (stored securely)
-   ```powershell
-   terraform output -raw vm_admin_password
-   ```
-
-## Accessing Resources
-
-After deployment:
-- Use the `azure_portal_link` output to view resources in Azure Portal
-- RDP to the VM using the public IP, admin username, and password from outputs
-- Access the Automation Account to create and run runbooks on the hybrid worker
-
-## Security Notes
-
-- The VM password is randomly generated and marked as sensitive
-- RDP access is allowed from any IP (modify NSG rules for production use)
-- Both VM and Automation Account have Contributor role at subscription level
-- Consider using Azure Bastion instead of public IP for production environments
-
-## Cleanup
-
-To destroy all resources:
-
-```powershell
+### 5. Cleanup
+```bash
+# Destroy all resources
 terraform destroy -auto-approve
 ```
 
-## Architecture
+## 📦 What's Included
 
+- **`main.tf`** - Complete infrastructure (22 resources)
+- **`variables.tf`** - Customizable parameters
+- **`outputs.tf`** - 14 useful outputs
+- **`run-test-runbook.ps1`** - Helper script for manual testing
+- **`GUIDE.md`** - Comprehensive user guide
+- **`README.md`** - This file
+
+## ⚙️ Configuration
+
+Edit `variables.tf` to customize:
+- Azure region (default: eastus)
+- Resource prefix (default: hwlab)
+- VM size (default: Standard_B2s)
+- Admin username (default: azureadmin)
+- Auto-test runbook (default: true)
+
+## 💰 Cost Estimation
+
+Approximate monthly costs: **~$38/month** (if VM runs 24/7)
+- Standard_B2s VM: ~$30/month
+- Automation Account: First 500 minutes free
+- Public IP: ~$3/month
+- Storage: ~$5/month
+
+**💡 Tip**: Use `terraform destroy` when not needed to avoid costs.
+
+## 📚 What You'll Learn
+
+1. Infrastructure as Code with Terraform
+2. Azure Managed Identities
+3. Hybrid Workers (run automation outside Azure)
+4. Azure Automation & Runbooks
+5. PowerShell automation with Az modules
+6. RBAC (Role-Based Access Control)
+7. External data sources in Terraform
+8. Automated testing in IaC
+
+## 🔧 How It Works
+
+### Architecture
 ```
 Azure Subscription
 └── Resource Group
-    ├── Virtual Network
-    │   └── Subnet
-    ├── Network Security Group
-    ├── Public IP
-    ├── Network Interface
-    ├── Windows VM (with Managed Identity + Contributor Role)
-    │   └── Hybrid Worker Extension
-    └── Automation Account (with Managed Identity + Contributor Role)
-        └── Hybrid Worker Group
+    ├── Automation Account (with managed identity)
+    │   ├── Hybrid Worker Group
+    │   ├── PowerShell Modules (Az.Accounts, Az.Compute)
+    │   └── Test Runbook
+    ├── Windows VM (with managed identity)
+    │   ├── Hybrid Worker Extension
+    │   └── PowerShell Modules
+    └── Virtual Network
+        └── Subnet + NSG + Public IP
 ```
 
-## Troubleshooting
+### Key Features
 
-- If the VM extension fails, check that the VM can reach Azure Automation endpoints
-- Ensure your Azure subscription has sufficient quota for the VM size
-- Role assignments may take a few minutes to propagate
-- Check the Azure Portal activity log for detailed error messages
+1. **AutomationHybridServiceUrl Retrieval** - Uses external data source with Azure REST API
+2. **Proper Registration Sequence** - VM registered before extension installation
+3. **Error Handling** - Graceful handling during destroy operations
+4. **Automated Testing** - Runbook automatically executes on deployment
 
-## Additional Resources
+## 🎮 Usage Examples
 
-- [Azure Automation Hybrid Worker Documentation](https://learn.microsoft.com/azure/automation/automation-hybrid-runbook-worker)
-- [Azure Managed Identities](https://learn.microsoft.com/azure/active-directory/managed-identities-azure-resources/)
+### Manual Runbook Execution
+
+**Option 1: PowerShell Script**
+```powershell
+.\run-test-runbook.ps1
+```
+
+**Option 2: Azure CLI**
+```bash
+az automation runbook start \
+  --automation-account-name hwlab-automation \
+  --resource-group rg-hybrid-worker-lab \
+  --name Test-HybridWorker-ManagedIdentity \
+  --run-on hwlab-worker-group
+```
+
+**Option 3: Azure Portal**
+Use the `runbook_link` output to open directly in Azure Portal.
+
+## 🔍 Troubleshooting
+
+See `GUIDE.md` for comprehensive troubleshooting guide.
+
+Common issues already handled:
+- ✅ AutomationHybridServiceUrl format errors
+- ✅ Worker registration timing issues
+- ✅ Destroy operation errors
+
+## 📖 Documentation
+
+- **`GUIDE.md`** - Complete user guide with examples
+- **`README.md`** - This quick reference
+- [Azure Automation Hybrid Worker](https://learn.microsoft.com/azure/automation/automation-hybrid-runbook-worker)
 - [Terraform AzureRM Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
+
+## 🎓 Next Steps
+
+1. **Add More Runbooks** - Automate VM management, backups, monitoring
+2. **Connect On-Premises** - Install Hybrid Worker on on-prem servers
+3. **Integrate Monitoring** - Send logs to Azure Monitor
+4. **Multi-Environment** - Use Terraform workspaces for dev/test/prod
+
+## 📄 License
+
+MIT License - See LICENSE file for details.
+
+## 🤝 Contributing
+
+Contributions welcome! Please open an issue or submit a pull request.
+
+## ⚠️ Disclaimer
+
+This is a **lab/demo configuration** for learning purposes. Review and test thoroughly before using in production environments.
+
+---
+
+**Package Version**: 1.0  
+**Last Updated**: November 2025  
+**Terraform Version**: >= 1.0  
+**Provider Versions**: azurerm ~> 3.0, azapi ~> 1.0
+
+---
+
+Made with ❤️ for Azure Automation learners
