@@ -23,10 +23,10 @@ Write-Host "   - Public or Private (your choice)" -ForegroundColor Gray
 Write-Host "   - DO NOT initialize with README" -ForegroundColor Red
 
 Write-Host "`n2. After creating the repo, run these commands:" -ForegroundColor White
-Write-Host "   (Replace YOUR_USERNAME with your GitHub username)`n" -ForegroundColor Gray
+Write-Host "   (Using your GitHub username: petarivanov-msft)`n" -ForegroundColor Gray
 
 $commands = @"
-git remote add origin https://github.com/YOUR_USERNAME/azure-hybrid-worker-lab.git
+git remote add origin https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
 git branch -M main
 git push -u origin main
 "@
@@ -37,7 +37,7 @@ Write-Host "`n3. Then use Azure Cloud Shell:" -ForegroundColor White
 Write-Host "   Go to: https://shell.azure.com`n" -ForegroundColor Cyan
 
 $cloudShellCommands = @"
-git clone https://github.com/YOUR_USERNAME/azure-hybrid-worker-lab.git
+git clone https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
 cd azure-hybrid-worker-lab
 terraform init
 terraform apply -auto-approve

@@ -23,7 +23,7 @@ Creates a **production-ready** Azure Hybrid Worker lab with:
 
 ### 2. Clone this repository
 ```bash
-git clone https://github.com/YOUR_USERNAME/azure-hybrid-worker-lab.git
+git clone https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
 cd azure-hybrid-worker-lab
 ```
 

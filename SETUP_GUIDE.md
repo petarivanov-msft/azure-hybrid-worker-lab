@@ -21,7 +21,7 @@
 
 5. In PowerShell (in this directory), run:
    ```powershell
-   git remote add origin https://github.com/YOUR_USERNAME/azure-hybrid-worker-lab.git
+   git remote add origin https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
    git branch -M main
    git push -u origin main
    ```
@@ -54,8 +54,8 @@ Choose "Bash" when prompted (recommended for Terraform)
 ## Step 2: Clone Your Repository
 
 ```bash
-# Clone the repository (replace YOUR_USERNAME with your GitHub username)
-git clone https://github.com/YOUR_USERNAME/azure-hybrid-worker-lab.git
+# Clone the repository
+git clone https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
 
 # Navigate to the directory
 cd azure-hybrid-worker-lab

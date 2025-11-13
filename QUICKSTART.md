@@ -29,20 +29,13 @@ All files are committed and ready to push to GitHub.
 **In PowerShell (in this directory), run:**
 
 ```powershell
-# Add remote (replace YOUR_USERNAME with your actual GitHub username)
-git remote add origin https://github.com/YOUR_USERNAME/azure-hybrid-worker-lab.git
+# Add remote
+git remote add origin https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
 
 # Rename branch to main
 git branch -M main
 
 # Push to GitHub
-git push -u origin main
-```
-
-**Example:**
-```powershell
-git remote add origin https://github.com/petarivanov/azure-hybrid-worker-lab.git
-git branch -M main
 git push -u origin main
 ```
 
@@ -58,8 +51,8 @@ git push -u origin main
 2. **Clone and deploy:**
 
 ```bash
-# Clone your repository (replace YOUR_USERNAME)
-git clone https://github.com/YOUR_USERNAME/azure-hybrid-worker-lab.git
+# Clone your repository
+git clone https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
 cd azure-hybrid-worker-lab
 
 # Make deployment script executable
@@ -147,8 +140,7 @@ Resources cost approximately **$38/month** if VM runs 24/7.
 Before pushing to GitHub:
 - [ ] Created GitHub repository
 - [ ] Did NOT initialize with README
-- [ ] Copied repository URL
-- [ ] Updated commands with YOUR_USERNAME
+- [ ] Repository URL: https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
 
 After pushing to GitHub:
 - [ ] Repository visible on GitHub
