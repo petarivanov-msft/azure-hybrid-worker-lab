@@ -13,7 +13,23 @@ Click the Cloud Shell icon (>_) in the Azure Portal toolbar
 
 Choose "Bash" when prompted (recommended for Terraform)
 
-## Step 2: Clone Your Repository
+## Step 2: Verify and Set Correct Subscription
+
+```bash
+# List all available subscriptions
+az account list --output table
+
+# Show current subscription
+az account show
+
+# If you need to switch, set the correct subscription
+az account set --subscription "YOUR_SUBSCRIPTION_ID_OR_NAME"
+
+# Verify it's now set correctly
+az account show --query "{Name:name, SubscriptionId:id}" --output table
+```
+
+## Step 3: Clone Your Repository
 
 ```bash
 # Clone the repository
@@ -23,7 +39,7 @@ git clone https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
 cd azure-hybrid-worker-lab
 ```
 
-## Step 3: Verify Prerequisites
+## Step 4: Verify Prerequisites
 
 ```bash
 # Check Terraform is available (Cloud Shell has it pre-installed)
@@ -36,7 +52,7 @@ az account show
 az account list --output table
 ```
 
-## Step 4: (Optional) Customize Configuration
+## Step 5: (Optional) Customize Configuration
 
 ```bash
 # Edit variables if needed
@@ -64,7 +80,7 @@ terraform plan
 terraform apply -auto-approve
 ```
 
-## Step 6: Monitor Deployment
+## Step 7: Monitor Deployment
 
 The deployment will show progress for each resource:
 - Resource Group (12s)
@@ -78,7 +94,7 @@ The deployment will show progress for each resource:
 - Create and publish runbook (20s)
 - Execute test runbook (2 minutes)
 
-## Step 7: View Results
+## Step 8: View Results
 
 ```bash
 # View all outputs
@@ -91,7 +107,7 @@ terraform output runbook_link
 terraform output vm_admin_password
 ```
 
-## Step 8: Test Manually (Optional)
+## Step 9: Test Manually (Optional)
 
 ```bash
 # Run the test runbook manually
@@ -102,7 +118,7 @@ az automation runbook start \
   --run-on hwlab-worker-group
 ```
 
-## Step 9: Cleanup
+## Step 10: Cleanup
 
 ```bash
 # When done, destroy all resources to avoid costs

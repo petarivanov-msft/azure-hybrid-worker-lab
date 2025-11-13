@@ -15,7 +15,20 @@ All files are committed and ready to push to GitHub.
    - Or click the Cloud Shell icon `>_` in Azure Portal
    - Choose **Bash** when prompted
 
-2. **Clone and deploy:**
+2. **Verify and set the correct subscription:**
+
+```bash
+# List all available subscriptions
+az account list --output table
+
+# Show current subscription
+az account show
+
+# If needed, set the correct subscription
+az account set --subscription "YOUR_SUBSCRIPTION_ID_OR_NAME"
+```
+
+3. **Clone and deploy:**
 
 ```bash
 # Clone your repository

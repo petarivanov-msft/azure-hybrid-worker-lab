@@ -19,15 +19,28 @@ Creates a **production-ready** Azure Hybrid Worker lab with:
 ```bash
 # Go to: https://shell.azure.com
 # Or click the Cloud Shell icon in Azure Portal
+# Choose Bash when prompted
 ```
 
-### 2. Clone this repository
+### 2. Verify your subscription
+```bash
+# List all subscriptions
+az account list --output table
+
+# Show current subscription
+az account show
+
+# Set the correct subscription if needed
+az account set --subscription "YOUR_SUBSCRIPTION_ID_OR_NAME"
+```
+
+### 3. Clone this repository
 ```bash
 git clone https://github.com/petarivanov-msft/azure-hybrid-worker-lab.git
 cd azure-hybrid-worker-lab
 ```
 
-### 3. Deploy
+### 4. Deploy
 ```bash
 # Initialize Terraform
 terraform init
@@ -36,10 +49,10 @@ terraform init
 terraform apply -auto-approve
 ```
 
-### 4. View Results
+### 5. View Results
 After deployment, you'll see outputs with links to your resources in Azure Portal.
 
-### 5. Cleanup
+### 6. Cleanup
 ```bash
 # Destroy all resources
 terraform destroy -auto-approve
