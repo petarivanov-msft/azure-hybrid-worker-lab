@@ -230,8 +230,8 @@ When you run `terraform apply`, the runbook automatically executes and shows:
 ========== RUNBOOK OUTPUT ==========
 Connecting to Azure using Managed Identity...
 Successfully connected to Azure!
-Subscription: Petar Developer Subscription (16cbe606-...)
-Tenant: b3480fa6-...
+Subscription: My Developer Subscription (xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)
+Tenant: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 --- Listing all VMs in the subscription ---
 Found 2 VM(s) in the subscription:
