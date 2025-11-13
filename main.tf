@@ -157,20 +157,11 @@ resource "azurerm_automation_account" "automation" {
 
 # Fetch AutomationHybridServiceUrl using external data source
 data "external" "automation_hybrid_url" {
-  program = ["pwsh", "-Command", <<-EOT
-    try {
-      $result = az rest --method get --url "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${azurerm_resource_group.rg.name}/providers/Microsoft.Automation/automationAccounts/${azurerm_automation_account.automation.name}?api-version=2023-11-01" 2>$null | ConvertFrom-Json
-      if ($result.properties.automationHybridServiceUrl) {
-        $url = $result.properties.automationHybridServiceUrl
-        $output = @{url = $url} | ConvertTo-Json -Compress
-        Write-Output $output
-      } else {
-        Write-Output '{"url":"placeholder"}'
-      }
-    } catch {
-      # During destroy, the resource might not exist
-      Write-Output '{"url":"placeholder"}'
-    }
+  program = ["bash", "-c", <<-EOT
+    set -e
+    result=$(az rest --method get --url "/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${azurerm_resource_group.rg.name}/providers/Microsoft.Automation/automationAccounts/${azurerm_automation_account.automation.name}?api-version=2023-11-01" 2>/dev/null || echo '{}')
+    url=$(echo "$result" | jq -r '.properties.automationHybridServiceUrl // "placeholder"')
+    echo "{\"url\":\"$url\"}"
   EOT
   ]
 
@@ -384,23 +375,27 @@ resource "azurerm_automation_runbook" "test_hybrid_worker" {
 resource "null_resource" "publish_runbook" {
   provisioner "local-exec" {
     command = <<-EOT
+      #!/bin/bash
+      set -e
       # Check if runbook is already published
-      $runbook = az automation runbook show `
-        --automation-account-name ${azurerm_automation_account.automation.name} `
-        --resource-group ${azurerm_resource_group.rg.name} `
-        --name ${azurerm_automation_runbook.test_hybrid_worker.name} | ConvertFrom-Json
+      runbook=$(az automation runbook show \
+        --automation-account-name ${azurerm_automation_account.automation.name} \
+        --resource-group ${azurerm_resource_group.rg.name} \
+        --name ${azurerm_automation_runbook.test_hybrid_worker.name} 2>/dev/null || echo '{}')
       
-      if ($runbook.state -ne "Published") {
-        Write-Host "Publishing runbook..." -ForegroundColor Cyan
-        az automation runbook publish `
-          --automation-account-name ${azurerm_automation_account.automation.name} `
-          --resource-group ${azurerm_resource_group.rg.name} `
+      state=$(echo "$runbook" | jq -r '.state // ""')
+      
+      if [ "$state" != "Published" ]; then
+        echo "Publishing runbook..."
+        az automation runbook publish \
+          --automation-account-name ${azurerm_automation_account.automation.name} \
+          --resource-group ${azurerm_resource_group.rg.name} \
           --name ${azurerm_automation_runbook.test_hybrid_worker.name}
-      } else {
-        Write-Host "Runbook is already published" -ForegroundColor Green
-      }
+      else
+        echo "Runbook is already published"
+      fi
     EOT
-    interpreter = ["pwsh", "-Command"]
+    interpreter = ["bash", "-c"]
   }
 
   depends_on = [
@@ -418,54 +413,58 @@ resource "null_resource" "run_test_runbook" {
 
   provisioner "local-exec" {
     command = <<-EOT
-      Write-Host "Starting test runbook on hybrid worker..." -ForegroundColor Cyan
+      #!/bin/bash
+      set -e
+      echo "Starting test runbook on hybrid worker..."
       
       # Start the runbook job
-      $job = az automation runbook start `
-        --automation-account-name ${azurerm_automation_account.automation.name} `
-        --resource-group ${azurerm_resource_group.rg.name} `
-        --name ${azurerm_automation_runbook.test_hybrid_worker.name} `
-        --run-on ${azurerm_automation_hybrid_runbook_worker_group.worker_group.name} | ConvertFrom-Json
+      job=$(az automation runbook start \
+        --automation-account-name ${azurerm_automation_account.automation.name} \
+        --resource-group ${azurerm_resource_group.rg.name} \
+        --name ${azurerm_automation_runbook.test_hybrid_worker.name} \
+        --run-on ${azurerm_automation_hybrid_runbook_worker_group.worker_group.name})
       
-      $jobName = $job.name
-      Write-Host "Job started: $jobName" -ForegroundColor Green
+      jobName=$(echo "$job" | jq -r '.name')
+      echo "Job started: $jobName"
       
       # Wait for job completion (max 2 minutes)
-      $maxWait = 120
-      $waited = 0
-      $status = "Running"
+      maxWait=120
+      waited=0
+      status="Running"
       
-      while ($status -notin @("Completed", "Failed", "Stopped", "Suspended") -and $waited -lt $maxWait) {
-        Start-Sleep -Seconds 5
-        $waited += 5
+      while [[ "$status" != "Completed" && "$status" != "Failed" && "$status" != "Stopped" && "$status" != "Suspended" && $waited -lt $maxWait ]]; do
+        sleep 5
+        waited=$((waited + 5))
         
-        $jobStatus = az automation job show `
-          --automation-account-name ${azurerm_automation_account.automation.name} `
-          --resource-group ${azurerm_resource_group.rg.name} `
-          --name $jobName | ConvertFrom-Json
+        jobStatus=$(az automation job show \
+          --automation-account-name ${azurerm_automation_account.automation.name} \
+          --resource-group ${azurerm_resource_group.rg.name} \
+          --name "$jobName")
         
-        $status = $jobStatus.status
-        Write-Host "." -NoNewline
-      }
+        status=$(echo "$jobStatus" | jq -r '.status')
+        echo -n "."
+      done
       
-      Write-Host ""
-      Write-Host "Job Status: $status" -ForegroundColor $(if ($status -eq "Completed") { "Green" } else { "Red" })
+      echo ""
+      echo "Job Status: $status"
       
-      if ($status -eq "Completed") {
-        Write-Host "`n========== RUNBOOK OUTPUT ==========" -ForegroundColor Green
+      if [ "$status" == "Completed" ]; then
+        echo ""
+        echo "========== RUNBOOK OUTPUT =========="
         
-        $subscriptionId = az account show --query id -o tsv
-        $outputUrl = "/subscriptions/$subscriptionId/resourceGroups/${azurerm_resource_group.rg.name}/providers/Microsoft.Automation/automationAccounts/${azurerm_automation_account.automation.name}/jobs/$jobName/output?api-version=2023-11-01"
+        subscriptionId=$(az account show --query id -o tsv)
+        outputUrl="/subscriptions/$subscriptionId/resourceGroups/${azurerm_resource_group.rg.name}/providers/Microsoft.Automation/automationAccounts/${azurerm_automation_account.automation.name}/jobs/$jobName/output?api-version=2023-11-01"
         
-        $output = az rest --method get --url $outputUrl
-        Write-Host $output
+        output=$(az rest --method get --url "$outputUrl")
+        echo "$output"
         
-        Write-Host "`n========== END OUTPUT ==========" -ForegroundColor Green
-      } else {
-        Write-Host "Job did not complete successfully. Status: $status" -ForegroundColor Red
-      }
+        echo ""
+        echo "========== END OUTPUT =========="
+      else
+        echo "Job did not complete successfully. Status: $status"
+      fi
     EOT
-    interpreter = ["pwsh", "-Command"]
+    interpreter = ["bash", "-c"]
   }
 
   depends_on = [
