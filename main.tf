@@ -321,7 +321,7 @@ resource "azurerm_automation_runbook" "test_hybrid_worker" {
 
 resource "null_resource" "publish_runbook" {
   provisioner "local-exec" {
-    command = <<-EOT
+    command     = <<-EOT
       #!/bin/bash
       set -e
       runbook=$(az automation runbook show \
@@ -355,7 +355,7 @@ resource "null_resource" "run_test_runbook" {
   count = var.run_test_runbook ? 1 : 0
 
   provisioner "local-exec" {
-    command = <<-EOT
+    command     = <<-EOT
       #!/bin/bash
       set -e
       echo "Starting test runbook on hybrid worker..."
