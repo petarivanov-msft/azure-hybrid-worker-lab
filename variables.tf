@@ -34,6 +34,12 @@ variable "tags" {
   }
 }
 
+variable "allowed_source_ip" {
+  description = "Source IP or CIDR allowed to RDP to the VM. Use '*' for any (not recommended for production)."
+  type        = string
+  default     = "*"
+}
+
 variable "run_test_runbook" {
   description = "Auto-run the test runbook after deployment"
   type        = bool

@@ -54,7 +54,7 @@ resource "azurerm_network_security_group" "nsg" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "3389"
-    source_address_prefix      = "*"
+    source_address_prefix      = var.allowed_source_ip
     destination_address_prefix = "*"
   }
 
@@ -193,14 +193,14 @@ resource "azurerm_virtual_machine_extension" "hybrid_worker" {
 data "azurerm_subscription" "current" {}
 
 resource "azurerm_role_assignment" "automation_contributor" {
-  scope                = data.azurerm_subscription.current.id
+  scope                = azurerm_resource_group.rg.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_automation_account.automation.identity[0].principal_id
   depends_on           = [azurerm_automation_account.automation]
 }
 
 resource "azurerm_role_assignment" "vm_contributor" {
-  scope                = data.azurerm_subscription.current.id
+  scope                = azurerm_resource_group.rg.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_windows_virtual_machine.vm.identity[0].principal_id
   depends_on           = [azurerm_windows_virtual_machine.vm]
@@ -294,7 +294,7 @@ resource "azurerm_automation_runbook" "test_hybrid_worker" {
     
     Write-Output "`n--- Getting details about the Hybrid Worker VM ---"
     try {
-        $currentVM = Get-AzVM -ResourceGroupName "rg-hybrid-worker-lab" -Name "hwlab-vm" -Status
+        $currentVM = Get-AzVM -ResourceGroupName "${azurerm_resource_group.rg.name}" -Name "${var.prefix}-vm" -Status
         Write-Output "VM Name: $($currentVM.Name)"
         Write-Output "Power State: $($currentVM.PowerState)"
         Write-Output "VM Agent Status: $($currentVM.VMAgent.Statuses[0].DisplayStatus)"
